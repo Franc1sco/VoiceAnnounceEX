@@ -160,13 +160,38 @@
 		}
 	}
 	"csgo"
-	{
+	{		
 		"Offsets"
 		{
 			"OnVoiceTransmit"
 			{
 				"windows"	"513"
 				"linux"		"514"
+				"mac"		"514"
+			}
+		}
+	}
+	"left4dead"
+	{		
+		"Offsets"
+		{
+			"OnVoiceTransmit"
+			{
+				"windows"	"461"
+				"linux"		"462"
+				"mac"		"462"
+			}
+		}
+	}
+	"left4dead2"
+	{		
+		"Offsets"
+		{
+			"OnVoiceTransmit"
+			{
+				"windows"	"485"
+				"linux"		"486"
+				"mac"		"486"
 			}
 		}
 	}
