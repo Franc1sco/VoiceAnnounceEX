@@ -5,7 +5,7 @@
 #include <dhooks>
 #include <voiceannounce_ex>
 
-#define PLUGIN_VERSION "2.0.0"
+#define PLUGIN_VERSION "2.1.0"
 
 new Handle:g_hProcessVoice = INVALID_HANDLE,
 	Handle:g_hOnClientTalking = INVALID_HANDLE,
@@ -30,7 +30,7 @@ public Plugin:myinfo =
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-	if(GetEngineVersion() == Engine_CSGO) is_csgo = true;
+	if(GetEngineVersion() == Engine_CSGO || GetEngineVersion() == Engine_Left4Dead || GetEngineVersion() == Engine_Left4Dead2) is_csgo = true;
 	else is_csgo = false;
 
 	
@@ -133,9 +133,9 @@ public OnClientDisconnect(client)
 	g_hClientMicTimers[client] = INVALID_HANDLE;
 }
 
-public MRESReturn:Hook_ProcessVoiceData(Address:this, Handle:hParams)
+public MRESReturn:Hook_ProcessVoiceData(Address:this2, Handle:hParams)
 {
-	new Address:pIClient = this - Address:4;
+	new Address:pIClient = this2 - Address:4;
 	new client = GetPlayerSlot(pIClient) + 1;
 		
 	if (g_hClientMicTimers[client] != INVALID_HANDLE)
