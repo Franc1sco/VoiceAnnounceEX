@@ -5,7 +5,7 @@
 #include <dhooks>
 #include <voiceannounce_ex>
 
-#define PLUGIN_VERSION "2.1.0"
+#define PLUGIN_VERSION "2.1.1"
 
 new Handle:g_hProcessVoice = INVALID_HANDLE,
 	Handle:g_hOnClientTalking = INVALID_HANDLE,
@@ -89,7 +89,7 @@ public OnPluginStart()
 		DHookAddParam(g_hProcessVoice, HookParamType_ObjectPtr);
 	}
 
-	g_hOnClientTalking = CreateGlobalForward("OnClientSpeakingEx", ET_Single, Param_Cell);
+	g_hOnClientTalking = CreateGlobalForward("OnClientSpeakingEx", ET_Ignore, Param_Cell);
 	g_hOnClientTalkingEnd = CreateGlobalForward("OnClientSpeakingEnd", ET_Ignore, Param_Cell);
 
 	if (g_bLateLoad)
@@ -149,15 +149,9 @@ public MRESReturn:Hook_ProcessVoiceData(Address:this2, Handle:hParams)
 		g_hClientMicTimers[client] = CreateTimer(0.3, Timer_ClientMicUsage, GetClientUserId(client));
 	}
 
-	new bool:returnBool = true;
 	Call_StartForward(g_hOnClientTalking);
 	Call_PushCell(client);
-	Call_Finish(_:returnBool);
-
-	if (!returnBool)
-	{
-		return MRES_Supercede;
-	}
+	Call_Finish();
 	
 	return MRES_Ignored;
 }
@@ -175,15 +169,9 @@ public MRESReturn:CSGOVoicePost(client, Handle:hReturn)
 		g_hClientMicTimers[client] = CreateTimer(0.3, Timer_ClientMicUsage, GetClientUserId(client));
 	}
 
-	new bool:returnBool = true;
 	Call_StartForward(g_hOnClientTalking);
 	Call_PushCell(client);
-	Call_Finish(_:returnBool);
-
-	if (!returnBool)
-	{
-		return MRES_Supercede;
-	}
+	Call_Finish();
 	
 	return MRES_Ignored;
 }  
