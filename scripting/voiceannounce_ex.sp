@@ -69,7 +69,7 @@ public Native_IsClientTalking(Handle:plugin, numParams)
 
 public OnPluginStart()
 {
-	CreateConVar("voiceannounce_ex_version", PLUGIN_VERSION, "plugin", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	CreateConVar("voiceannounce_ex_version", PLUGIN_VERSION, "plugin", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	new offset;
 	if(is_csgo)
 	{

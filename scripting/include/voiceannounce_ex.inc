@@ -37,13 +37,11 @@ native bool:IsClientSpeaking(client);
  *
  * Called when a client is speaking.
  *
- * @param client	The index of the client that is speaking.
- *
- * @return			True to allow the client to talk, false otherwise.
+ * @noreturn
  *
  */
 
-forward bool:OnClientSpeakingEx(client);
+forward OnClientSpeakingEx(client);
 
 /**
  *
