@@ -3,7 +3,7 @@
 #endif
 #define _voiceannounceex_included_
 
-public SharedPlugin:__pl_voiceannounceex =
+public SharedPlugin __pl_voiceannounceex =
 {
 	name = "voiceannounce_ex",
 	file = "voiceannounce_ex.smx",
@@ -14,7 +14,7 @@ public SharedPlugin:__pl_voiceannounceex =
 	#endif
 };
 
-public __pl_voiceannounceex_SetNTVOptional()
+public void __pl_voiceannounceex_SetNTVOptional()
 {
 	MarkNativeAsOptional("IsClientSpeaking");
 }
@@ -31,7 +31,7 @@ public __pl_voiceannounceex_SetNTVOptional()
  *
  */
 
-native bool:IsClientSpeaking(client);
+native bool IsClientSpeaking(int client);
 
 /**
  *
@@ -41,7 +41,7 @@ native bool:IsClientSpeaking(client);
  *
  */
 
-forward OnClientSpeakingEx(client);
+forward int OnClientSpeakingEx(int client);
 
 /**
  *
@@ -52,4 +52,4 @@ forward OnClientSpeakingEx(client);
  * @noreturn
  *
  */
-forward OnClientSpeakingEnd(client);
+forward int OnClientSpeakingEnd(int client);
