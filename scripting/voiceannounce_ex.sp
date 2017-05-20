@@ -22,7 +22,7 @@
 #include <dhooks>
 #include <voiceannounce_ex>
 
-#define PLUGIN_VERSION "2.1.1"
+#define PLUGIN_VERSION "2.1.2"
 
 new Handle:g_hProcessVoice = INVALID_HANDLE,
 	Handle:g_hOnClientTalking = INVALID_HANDLE,
@@ -154,6 +154,11 @@ public MRESReturn:Hook_ProcessVoiceData(Address:this2, Handle:hParams)
 {
 	new Address:pIClient = this2 - Address:4;
 	new client = GetPlayerSlot(pIClient) + 1;
+	
+	if (!IsClientConnected(client))
+	{
+		return MRES_Ignored;
+	}
 		
 	if (g_hClientMicTimers[client] != INVALID_HANDLE)
 	{
