@@ -34,7 +34,7 @@
 			"CVEngineServer::CreateFakeClient"
 			{
 				"library"	"engine"
-				"windows"	"\x55\x8B\xEC\x56\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B"
+				"windows"	" 55 8B EC 56 FF 2A 2A B9 2A 2A 2A 2A E8 2A 2A 2A 2A 8B"
 			}
 			
 			"sv"
@@ -80,7 +80,7 @@
 			"CVEngineServer::CreateFakeClient"
 			{
 				"library"	"engine"
-				"windows"	"\x8B\x44\x24\x04\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0"
+				"windows"	" 8B 44 24 04 50 B9 2A 2A 2A 2A E8 2A 2A 2A 2A 85 C0"
 			}
 			
 			"sv"
@@ -165,9 +165,9 @@
 		{
 			"OnVoiceTransmit"
 			{
-				"windows"	"513"
-				"linux"		"514"
-				"mac"		"514"
+				"windows"	"514"
+				"linux"		"515"
+				"mac"		"515"
 			}
 		}
 	}
