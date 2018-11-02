@@ -14,28 +14,28 @@
  * You should have received a copy of the GNU General Public License along with 
  * this program. If not, see http://www.gnu.org/licenses/.
  */
-
-#pragma semicolon 1
-
 #include <sourcemod>
 #include <sdktools>
 #include <dhooks>
 #include <voiceannounce_ex>
 
-#define PLUGIN_VERSION "2.1.2"
+#pragma semicolon 1
+#pragma newdecls required
 
-new Handle:g_hProcessVoice = INVALID_HANDLE,
-	Handle:g_hOnClientTalking = INVALID_HANDLE,
-	Handle:g_hOnClientTalkingEnd = INVALID_HANDLE,
-	bool:g_bLateLoad = false;
+#define PLUGIN_VERSION "2.2.0"
 
-new g_iHookID[MAXPLAYERS+1] = { -1, ... };
-new Handle:g_hClientMicTimers[MAXPLAYERS + 1] = {INVALID_HANDLE, ...};
+Handle g_hProcessVoice;
+Handle g_hOnClientTalking;
+Handle g_hOnClientTalkingEnd;
+bool g_bLateLoad;
 
-new bool:is_csgo;
-new Handle:hCSGOVoice;
+int g_iHookID[MAXPLAYERS+1] = { -1, ... };
+Handle g_hClientMicTimers[MAXPLAYERS + 1];
 
-public Plugin:myinfo = 
+bool g_bCsgo;
+Handle g_hCSGOVoice;
+
+public Plugin myinfo = 
 {
 	name = "VoiceAnnounceEx",
 	author = "Franc1sco franug, Mini and GoD-Tony",
@@ -45,50 +45,48 @@ public Plugin:myinfo =
 }
 
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	if(GetEngineVersion() == Engine_CSGO || GetEngineVersion() == Engine_Left4Dead || GetEngineVersion() == Engine_Left4Dead2) is_csgo = true;
-	else is_csgo = false;
+	g_bCsgo = (GetEngineVersion() == Engine_CSGO || GetEngineVersion() == Engine_Left4Dead || GetEngineVersion() == Engine_Left4Dead2);
 
-	
 	CreateNative("IsClientSpeaking", Native_IsClientTalking);
 
 	RegPluginLibrary("voiceannounce_ex");
+	
+	g_hOnClientTalking = CreateGlobalForward("OnClientSpeakingEx", ET_Ignore, Param_Cell);
+	g_hOnClientTalkingEnd = CreateGlobalForward("OnClientSpeakingEnd", ET_Ignore, Param_Cell);
 
 	g_bLateLoad = late;
 	return APLRes_Success;
 }
 
-public Native_IsClientTalking(Handle:plugin, numParams)
+public int Native_IsClientTalking(Handle plugin, int numParams)
 {
-	new client = GetNativeCell(1);
+	int client = GetNativeCell(1);
 
 	if (client > MaxClients || client <= 0)
 	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client is not valid.");
-		return false;
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client is not valid.");
 	}
 
 	if (!IsClientInGame(client))
 	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client is not in-game.");
-		return false;
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client is not in-game.");
 	}
 
 	if (IsFakeClient(client))
 	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Cannot do mic checks on fake clients.");
-		return false;
+		return ThrowNativeError(SP_ERROR_NATIVE, "Cannot do mic checks on fake clients.");
 	}
 
-	return (g_hClientMicTimers[client] == INVALID_HANDLE) ? false : true;
+	return g_hClientMicTimers[client] != INVALID_HANDLE;
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
-	CreateConVar("voiceannounce_ex_version", PLUGIN_VERSION, "plugin", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	new offset;
-	if(is_csgo)
+	CreateConVar("voiceannounce_ex_version", PLUGIN_VERSION, "VoiceAnnounceEx version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	int offset;
+	if(g_bCsgo)
 	{
 		offset = GameConfGetOffset(GetConfig(), "OnVoiceTransmit");
 
@@ -96,7 +94,7 @@ public OnPluginStart()
 			SetFailState("Failed to get offset");
 
 	
-		hCSGOVoice = DHookCreate(offset, HookType_Entity, ReturnType_Int, ThisPointer_CBaseEntity, CSGOVoicePost);
+		g_hCSGOVoice = DHookCreate(offset, HookType_Entity, ReturnType_Int, ThisPointer_CBaseEntity, CSGOVoicePost);
 	}
 	else
 	{
@@ -106,37 +104,32 @@ public OnPluginStart()
 		DHookAddParam(g_hProcessVoice, HookParamType_ObjectPtr);
 	}
 
-	g_hOnClientTalking = CreateGlobalForward("OnClientSpeakingEx", ET_Ignore, Param_Cell);
-	g_hOnClientTalkingEnd = CreateGlobalForward("OnClientSpeakingEnd", ET_Ignore, Param_Cell);
-
 	if (g_bLateLoad)
 	{
-		for (new i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++) if (IsClientInGame(i) && !IsFakeClient(i))
 		{
-			if (IsClientInGame(i) && !IsFakeClient(i))
-			{
-				OnClientPutInServer(i);
-			}
+			OnClientPutInServer(i);
 		}
 	}
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	if (!IsFakeClient(client))
 	{
-		if(is_csgo) DHookEntity(hCSGOVoice, true, client); 
+		if(g_bCsgo) DHookEntity(g_hCSGOVoice, true, client); 
 		else g_iHookID[client] = DHookRaw(g_hProcessVoice, true, GetIMsgHandler(client));
 
 		if (g_hClientMicTimers[client] != INVALID_HANDLE)
-			KillTimer(g_hClientMicTimers[client]);
-		g_hClientMicTimers[client] = INVALID_HANDLE;
+		{
+			delete g_hClientMicTimers[client];
+		}
 	}
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
-	if(is_csgo)
+	if(g_bCsgo)
 	{
 		if (g_iHookID[client] != -1)
 		{
@@ -145,24 +138,25 @@ public OnClientDisconnect(client)
 			g_iHookID[client] = -1;
 		}
 	}
+	
 	if (g_hClientMicTimers[client] != INVALID_HANDLE)
-		KillTimer(g_hClientMicTimers[client]);
-	g_hClientMicTimers[client] = INVALID_HANDLE;
+	{
+		delete g_hClientMicTimers[client];
+	}
+
 }
 
-public MRESReturn:Hook_ProcessVoiceData(Address:this2, Handle:hParams)
+public MRESReturn Hook_ProcessVoiceData(Address pThis)
 {
-	new Address:pIClient = this2 - Address:4;
-	new client = GetPlayerSlot(pIClient) + 1;
+	Address pIClient = pThis - view_as<Address>(4);
+	int client = view_as<int>(GetPlayerSlot(pIClient)) + 1;
 	
 	if (!IsClientConnected(client))
-	{
 		return MRES_Ignored;
-	}
 		
 	if (g_hClientMicTimers[client] != INVALID_HANDLE)
 	{
-		KillTimer(g_hClientMicTimers[client]);
+		delete g_hClientMicTimers[client];
 		g_hClientMicTimers[client] = CreateTimer(0.3, Timer_ClientMicUsage, GetClientUserId(client));
 	}
 		
@@ -178,11 +172,11 @@ public MRESReturn:Hook_ProcessVoiceData(Address:this2, Handle:hParams)
 	return MRES_Ignored;
 }
 
-public MRESReturn:CSGOVoicePost(client, Handle:hReturn) 
+public MRESReturn CSGOVoicePost(int client, Handle hReturn, Handle hParams) 
 { 	
 	if (g_hClientMicTimers[client] != INVALID_HANDLE)
 	{
-		KillTimer(g_hClientMicTimers[client]);
+		delete g_hClientMicTimers[client];
 		g_hClientMicTimers[client] = CreateTimer(0.3, Timer_ClientMicUsage, GetClientUserId(client));
 	}
 		
@@ -198,23 +192,27 @@ public MRESReturn:CSGOVoicePost(client, Handle:hReturn)
 	return MRES_Ignored;
 }  
 
-public Action:Timer_ClientMicUsage(Handle:timer, any:userid)
+public Action Timer_ClientMicUsage(Handle timer, any userid)
 {
-	new client = GetClientOfUserId(userid);
+	int client = GetClientOfUserId(userid);
+	if (!client)
+		return Plugin_Continue;
+	
 	g_hClientMicTimers[client] = INVALID_HANDLE;
 	
 	Call_StartForward(g_hOnClientTalkingEnd);
 	Call_PushCell(client);
 	Call_Finish();
+	return Plugin_Continue;
 }
 
 /*
 * Internal Functions
 * Credits go to GoD-Tony
 */
-stock Handle:GetConfig()
+stock Handle GetConfig()
 {
-	static Handle:hGameConf = INVALID_HANDLE;
+	static Handle hGameConf = INVALID_HANDLE;
 	
 	if (hGameConf == INVALID_HANDLE)
 	{
@@ -224,9 +222,9 @@ stock Handle:GetConfig()
 	return hGameConf;
 }
 
-stock Address:GetBaseServer()
+stock Address GetBaseServer()
 {
-	static Address:pBaseServer = Address_Null;
+	static Address pBaseServer = Address_Null;
 	
 	if (pBaseServer == Address_Null)
 	{
@@ -236,9 +234,9 @@ stock Address:GetBaseServer()
 	return pBaseServer;
 }
 
-stock Address:GetIClient(slot)
+stock Address GetIClient(int slot)
 {
-	static Handle:hGetClient = INVALID_HANDLE;
+	static Handle hGetClient = INVALID_HANDLE;
 	
 	if (hGetClient == INVALID_HANDLE)
 	{
@@ -249,12 +247,12 @@ stock Address:GetIClient(slot)
 		hGetClient = EndPrepSDKCall();
 	}
 	
-	return Address:SDKCall(hGetClient, GetBaseServer(), slot);
+	return view_as<Address>(SDKCall(hGetClient, GetBaseServer(), slot));
 }
 
-stock GetPlayerSlot(Address:pIClient)
+stock any GetPlayerSlot(Address pIClient)
 {
-	static Handle:hPlayerSlot = INVALID_HANDLE;
+	static Handle hPlayerSlot = INVALID_HANDLE;
 	
 	if (hPlayerSlot == INVALID_HANDLE)
 	{
@@ -267,7 +265,7 @@ stock GetPlayerSlot(Address:pIClient)
 	return SDKCall(hPlayerSlot, pIClient);
 }
 
-stock Address:GetIMsgHandler(client)
+stock Address GetIMsgHandler(int client)
 {
-	return GetIClient(client - 1) + Address:4;
+	return GetIClient(client - 1) + view_as<Address>(4);
 }
