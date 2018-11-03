@@ -35,7 +35,9 @@ native bool IsClientSpeaking(int client);
 
 /**
  *
- * Called when a client is speaking.
+ * Called while a client is speaking.
+ *
+ *	@param client	Client index.
  *
  * @noreturn
  *
@@ -45,9 +47,9 @@ forward void OnClientSpeakingEx(int client);
 
 /**
  *
- * Called when a client end of speaking.
+ * Called when a client ends speaking.
  *
- * @param client	The index of the client.
+ * @param client	Client index.
  *
  * @noreturn
  *
