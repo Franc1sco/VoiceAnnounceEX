@@ -165,9 +165,9 @@
 		{
 			"OnVoiceTransmit"
 			{
-				"windows"	"522"
-				"linux"		"523"
-				"mac"		"523"
+				"windows"	"523"
+				"linux"		"524"
+				"mac"		"524"
 			}
 		}
 	}
