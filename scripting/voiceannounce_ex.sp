@@ -1,6 +1,6 @@
 /*  VoiceAnnounceEx
  *
- *  Copyright (C) 2017 Francisco 'Franc1sco' García
+ *  Copyright (C) 2017-2019 Francisco 'Franc1sco' García
  * 
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,7 +22,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "2.2.0"
+#define PLUGIN_VERSION "2.2.1"
 
 Handle g_hProcessVoice;
 Handle g_hOnClientTalking;
