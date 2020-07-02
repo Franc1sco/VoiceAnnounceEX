@@ -1,6 +1,6 @@
 /*  VoiceAnnounceEx
  *
- *  Copyright (C) 2017-2019 Francisco 'Franc1sco' García
+ *  Copyright (C) 2017-2020 Francisco 'Franc1sco' García
  * 
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,7 +22,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "2.2.1"
+#define PLUGIN_VERSION "2.3"
 
 Handle g_hProcessVoice;
 Handle g_hOnClientTalking;
@@ -32,8 +32,8 @@ bool g_bLateLoad;
 int g_iHookID[MAXPLAYERS+1] = { -1, ... };
 Handle g_hClientMicTimers[MAXPLAYERS + 1];
 
-bool g_bCsgo;
-Handle g_hCSGOVoice;
+bool g_bUseVoiceTransmit;
+Handle g_hOnVoiceTransmit;
 
 public Plugin myinfo = 
 {
@@ -47,7 +47,7 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	g_bCsgo = (GetEngineVersion() == Engine_CSGO || GetEngineVersion() == Engine_Left4Dead || GetEngineVersion() == Engine_Left4Dead2);
+	g_bUseVoiceTransmit = (GetEngineVersion() == Engine_CSGO || GetEngineVersion() == Engine_Left4Dead || GetEngineVersion() == Engine_Left4Dead2 || GetEngineVersion() ==  Engine_Insurgency);
 	
 	CreateNative("IsClientSpeaking", Native_IsClientTalking);
 	RegPluginLibrary("voiceannounce_ex");
@@ -78,13 +78,13 @@ public void OnPluginStart()
 {
 	CreateConVar("voiceannounce_ex_version", PLUGIN_VERSION, "VoiceAnnounceEx version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	int offset;
-	if (g_bCsgo)
+	if (g_bUseVoiceTransmit)
 	{
 		offset = GameConfGetOffset(GetConfig(), "OnVoiceTransmit");
 		if (offset == -1)
 			SetFailState("Failed to get offset");
 		
-		g_hCSGOVoice = DHookCreate(offset, HookType_Entity, ReturnType_Int, ThisPointer_CBaseEntity, CSGOVoicePost);
+		g_hOnVoiceTransmit = DHookCreate(offset, HookType_Entity, ReturnType_Int, ThisPointer_CBaseEntity, CSGOVoicePost);
 	}
 	else
 	{
@@ -110,8 +110,8 @@ public void OnClientPutInServer(int iClient)
 	if (IsFakeClient(iClient))
 		return;
 	
-	if (g_bCsgo)
-		DHookEntity(g_hCSGOVoice, true, iClient);
+	if (g_bUseVoiceTransmit)
+		DHookEntity(g_hOnVoiceTransmit, true, iClient);
 	
 	else
 		g_iHookID[iClient] = DHookRaw(g_hProcessVoice, true, GetIMsgHandler(iClient));
@@ -124,7 +124,7 @@ public void OnClientDisconnect(int iClient)
 	if (IsFakeClient(iClient))
 		return;
 	
-	if (g_bCsgo)
+	if (g_bUseVoiceTransmit)
 	{
 		if (g_iHookID[iClient] != -1)
 		{
