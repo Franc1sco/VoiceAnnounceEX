@@ -1,6 +1,6 @@
 /*  VoiceAnnounceEx
  *
- *  Copyright (C) 2017-2020 Francisco 'Franc1sco' García
+ *  Copyright (C) 2017-2022 Francisco 'Franc1sco' García
  * 
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,7 +22,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "2.3"
+#define PLUGIN_VERSION "2.3.1"
 
 Handle g_hProcessVoice;
 Handle g_hOnClientTalking;
@@ -89,7 +89,7 @@ public void OnPluginStart()
 	else
 	{
 		offset = GameConfGetOffset(GetConfig(), "CGameClient::ProcessVoiceData");
-		g_hProcessVoice = DHookCreate(offset, HookType_Raw, ReturnType_Void, ThisPointer_Address, Hook_ProcessVoiceData);
+		g_hProcessVoice = DHookCreate(offset, HookType_Raw, ReturnType_Bool, ThisPointer_Address, Hook_ProcessVoiceData); 
 		DHookAddParam(g_hProcessVoice, HookParamType_ObjectPtr);
 	}
 
