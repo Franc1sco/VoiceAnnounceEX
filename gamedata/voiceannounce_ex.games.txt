@@ -207,4 +207,45 @@
 			}
 		}
 	}
+	"NeotokyoSource"
+	{
+		"Addresses"
+		{
+			"CBaseServer"
+			{
+				"windows"
+				{
+					"signature"	"CVEngineServer::CreateFakeClient"
+					"read"		"6"
+				}
+			}
+		}
+		
+		"Offsets"
+		{
+			"CBaseServer::GetClient"
+			{
+				"windows"	"6"
+			}
+			
+			"CBaseClient::GetPlayerSlot"
+			{
+				"windows"	"13"
+			}
+			
+			"CGameClient::ProcessVoiceData"
+			{
+				"windows"	"7"
+			}
+		}
+		
+		"Signatures"
+		{
+			"CVEngineServer::CreateFakeClient"
+			{
+				"library"	"engine"
+				"windows"	"\x8B\x44\x24\x04\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75\x2A"
+			}
+		}
+	}
 }
